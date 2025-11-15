@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { RuliwebCrawler } from './crawlers/ruliweb.js';
 import { ArcaliveCrawler } from './crawlers/arcalive.js';
+import { PuppeteerFetcher } from './utils/puppeteer-fetcher.js';
 import { Logger } from './utils/logger.js';
 import { RULIWEB_BOARDS, ARCALIVE_CHANNELS } from './config.js';
 import type { Post } from './types.js';
@@ -56,7 +57,13 @@ async function test(): Promise<void> {
     Logger.error('Failed to save posts', error);
   }
 
+  // 브라우저 종료
+  await PuppeteerFetcher.closeBrowser();
+
   Logger.info('========== Test crawl completed ==========');
 }
 
-test();
+test().catch((error) => {
+  Logger.error('Test failed', error);
+  PuppeteerFetcher.closeBrowser().finally(() => process.exit(1));
+});

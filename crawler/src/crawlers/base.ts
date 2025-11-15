@@ -1,5 +1,5 @@
 import type { Post, BoardConfig } from '../types.js';
-import { Fetcher } from '../utils/fetcher.js';
+import { PuppeteerFetcher } from '../utils/puppeteer-fetcher.js';
 import { Logger } from '../utils/logger.js';
 
 export abstract class BaseCrawler {
@@ -20,7 +20,7 @@ export abstract class BaseCrawler {
         );
 
         // 다음 게시판으로 넘어가기 전 딜레이
-        await Fetcher.delay();
+        await PuppeteerFetcher.delay();
       } catch (error) {
         Logger.error(
           `Failed to crawl ${this.communityName} - ${board.name}`,

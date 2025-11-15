@@ -1,7 +1,7 @@
 import * as cheerio from 'cheerio';
 import { BaseCrawler } from './base.js';
 import type { Post, BoardConfig } from '../types.js';
-import { Fetcher } from '../utils/fetcher.js';
+import { PuppeteerFetcher } from '../utils/puppeteer-fetcher.js';
 import { Logger } from '../utils/logger.js';
 import { CRAWLER_CONFIG } from '../config.js';
 
@@ -9,7 +9,7 @@ export class RuliwebCrawler extends BaseCrawler {
   protected communityName = 'Ruliweb';
 
   async crawlBoard(board: BoardConfig): Promise<Post[]> {
-    const html = await Fetcher.fetchHTML(board.url);
+    const html = await PuppeteerFetcher.fetchHTML(board.url);
     if (!html) return [];
 
     const $ = cheerio.load(html);
