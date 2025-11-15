@@ -8,7 +8,8 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "tsx src/test.ts"
+    "test": "tsx src/test.ts",
+    "debug": "tsx src/debug-html.ts"
   },
   "keywords": [
     "crawler",
