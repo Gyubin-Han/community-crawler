@@ -15,24 +15,34 @@ export class ArcaliveCrawler extends BaseCrawler {
     const $ = cheerio.load(html);
     const posts: Post[] = [];
 
-    // 아카라이브 구조에 맞게 선택자 수정
-    $('.vrow').each((index, element) => {
+    // 실제 아카라이브 HTML 구조에 맞게 수정
+    $('a.vrow').each((index, element) => {
       if (index >= CRAWLER_CONFIG.maxPostsPerBoard) return false;
 
       try {
         const $el = $(element);
 
-        // 공지사항 제외
-        if ($el.hasClass('notice')) return;
+        // URL (a 태그의 href)
+        const url = $el.attr('href') || '';
 
-        const titleEl = $el.find('.title a');
-        const title = this.cleanText(titleEl.text());
-        const url = titleEl.attr('href') || '';
-        const author = this.cleanText($el.find('.user-info').text());
-        const views = this.parseNumber($el.find('.view-count').text());
-        const comments = this.parseNumber($el.find('.comment-count').text());
-        const likes = this.parseNumber($el.find('.vote-count').text());
-        const timeStr = this.cleanText($el.find('.time').text());
+        // 제목
+        const title = this.cleanText($el.find('.col-title .title').text());
+
+        // 작성자 (data-filter 속성이 있는 span 또는 첫 번째 span)
+        const authorEl = $el.find('.col-author .user-info span[data-filter]');
+        const author = this.cleanText(authorEl.length > 0 ? authorEl.text() : $el.find('.col-author .user-info span').first().text());
+
+        // 조회수, 추천수
+        const views = this.parseNumber($el.find('.col-view').text());
+        const likes = this.parseNumber($el.find('.col-rate').text());
+
+        // 댓글 수 (아카라이브는 제목에 포함되어 있을 수 있음, 또는 별도 요소)
+        const commentEl = $el.find('.col-title .comment-count');
+        const comments = commentEl.length > 0 ? this.parseNumber(commentEl.text()) : 0;
+
+        // 시간
+        const timeEl = $el.find('.col-time time');
+        const timeStr = timeEl.length > 0 ? this.cleanText(timeEl.text()) : '';
 
         if (!title) return;
 
@@ -51,6 +61,7 @@ export class ArcaliveCrawler extends BaseCrawler {
         };
 
         posts.push(post);
+        Logger.info(`Parsed Arcalive post: ${title} (views: ${views}, comments: ${comments}, likes: ${likes})`);
       } catch (error) {
         Logger.error(`Error parsing Arcalive post at index ${index}`, error);
       }
