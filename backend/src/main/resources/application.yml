@@ -4,7 +4,7 @@ spring:
   datasource:
     url: jdbc:mariadb://127.0.0.1:3306/community_aggregator
     username: aggregator
-    password: aggregator123
+    password: 'aggregator123'
     driver-class-name: org.mariadb.jdbc.Driver
 
   jpa:
