@@ -25,9 +25,6 @@ public class DataSourceDebugger {
         log.info("URL: {}", url);
         log.info("Username: {}", username);
         log.info("Password length: {}", password != null ? password.length() : "null");
-        log.info("Password (first 2 chars): {}****", password != null && password.length() > 2 ? password.substring(0, 2) : "??");
-        // TEMPORARY: Log full password for debugging (REMOVE AFTER FIXING!)
-        log.warn("TEMPORARY DEBUG - Full password: [{}]", password);
         log.info("================================");
     }
 }
