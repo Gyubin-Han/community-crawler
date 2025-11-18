@@ -28,3 +28,18 @@ src/data/posts.json
 
 # Debug files
 crawler/debug-*.html
+
+# Maven
+backend/target/
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
+
+# Spring Boot
+backend/HELP.md
+backend/*.iml
+backend/.gradle/
+backend/build/
+
+# Application properties (if contains sensitive data)
+# backend/src/main/resources/application-local.yml
