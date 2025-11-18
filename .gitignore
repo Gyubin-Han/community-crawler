@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Crawled data
+src/data/posts.json
+
+# Debug files
+crawler/debug-*.html
