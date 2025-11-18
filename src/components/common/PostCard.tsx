@@ -61,7 +61,9 @@ const PostCard: React.FC<PostCardProps> = ({ post, onClick }) => {
 
       <div className="flex items-center justify-between text-xs text-gray-500">
         <div className="flex items-center gap-4">
-          <span>{post.board}</span>
+          <span className="px-2 py-0.5 border-2 border-gray-400 text-gray-700 rounded font-medium bg-gray-50">
+            {post.board}
+          </span>
           <span>작성자: {post.author}</span>
         </div>
         <div className="flex items-center gap-3">

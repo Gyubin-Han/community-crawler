@@ -1,18 +1,20 @@
-import { useState } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Header from './components/common/Header';
-import PostList from './components/PostList';
-import crawledPosts from './data/posts.json';
-import type { Post } from './types';
+import Navigation from './components/common/Navigation';
+import BoardPage from './pages/BoardPage';
 
 function App() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const posts = crawledPosts as Post[];
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header onSearch={setSearchQuery} />
-      <PostList posts={posts} searchQuery={searchQuery} />
-    </div>
+    <BrowserRouter>
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <Navigation />
+        <Routes>
+          <Route path="/" element={<BoardPage />} />
+          <Route path="/board/:boardId" element={<BoardPage />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
   );
 }
 

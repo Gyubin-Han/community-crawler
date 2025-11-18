@@ -1,24 +1,26 @@
 import React from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
 
-interface HeaderProps {
-  onSearch: (query: string) => void;
-}
-
-const Header: React.FC<HeaderProps> = ({ onSearch }) => {
-  const [searchQuery, setSearchQuery] = React.useState('');
+const Header: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = React.useState(searchParams.get('q') || '');
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch(searchQuery);
+    if (searchQuery.trim()) {
+      setSearchParams({ q: searchQuery });
+    } else {
+      setSearchParams({});
+    }
   };
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-10">
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-800">
+          <Link to="/" className="text-2xl font-bold text-gray-800 hover:text-gray-600 transition-colors">
             한국 커뮤니티 애그리게이터
-          </h1>
+          </Link>
           <form onSubmit={handleSearch} className="flex gap-2">
             <input
               type="text"

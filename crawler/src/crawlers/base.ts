@@ -68,13 +68,50 @@ export abstract class BaseCrawler {
       return now.toISOString();
     }
 
-    // 날짜 형식 (YYYY-MM-DD 또는 MM-DD)
-    const dateMatch = timeStr.match(/(\d{4})-(\d{2})-(\d{2})/);
-    if (dateMatch) {
-      return new Date(timeStr).toISOString();
+    // 시:분 형식 (오늘 날짜로 처리) - "03:02", "15:30" 등
+    const timeOnlyMatch = timeStr.match(/^(\d{1,2}):(\d{2})$/);
+    if (timeOnlyMatch) {
+      const [, hours, minutes] = timeOnlyMatch;
+      const date = new Date();
+      date.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      return date.toISOString();
     }
 
-    // 파싱 실패 시 현재 시간 반환
+    // 월-일 형식 (올해로 처리) - "11-15", "12-25" 등
+    const monthDayMatch = timeStr.match(/^(\d{1,2})-(\d{1,2})$/);
+    if (monthDayMatch) {
+      const [, month, day] = monthDayMatch;
+      const date = new Date();
+      date.setMonth(parseInt(month) - 1, parseInt(day));
+      date.setHours(0, 0, 0, 0);
+      return date.toISOString();
+    }
+
+    // 날짜 형식 (YYYY-MM-DD, YYYY.MM.DD, YYYY/MM/DD)
+    const fullDateMatch = timeStr.match(/(\d{4})[-./](\d{1,2})[-./](\d{1,2})/);
+    if (fullDateMatch) {
+      const [, year, month, day] = fullDateMatch;
+      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      return date.toISOString();
+    }
+
+    // 날짜+시간 형식 (YYYY-MM-DD HH:mm:ss)
+    const fullDateTimeMatch = timeStr.match(/(\d{4})[-./](\d{1,2})[-./](\d{1,2})\s+(\d{1,2}):(\d{2}):(\d{2})/);
+    if (fullDateTimeMatch) {
+      const [, year, month, day, hours, minutes, seconds] = fullDateTimeMatch;
+      const date = new Date(
+        parseInt(year),
+        parseInt(month) - 1,
+        parseInt(day),
+        parseInt(hours),
+        parseInt(minutes),
+        parseInt(seconds)
+      );
+      return date.toISOString();
+    }
+
+    // 파싱 실패 시 현재 시간 반환 (크롤링 시간)
+    Logger.warn(`Failed to parse time: "${timeStr}", using crawl time`);
     return now.toISOString();
   }
 

@@ -6,9 +6,10 @@ import PostModal from './common/PostModal';
 interface PostListProps {
   posts: Post[];
   searchQuery: string;
+  boardName?: string;
 }
 
-const PostList: React.FC<PostListProps> = ({ posts, searchQuery }) => {
+const PostList: React.FC<PostListProps> = ({ posts, searchQuery, boardName }) => {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>('all');
 
@@ -30,6 +31,10 @@ const PostList: React.FC<PostListProps> = ({ posts, searchQuery }) => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
+      {boardName && (
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">{boardName}</h2>
+      )}
+
       <div className="flex gap-2 mb-6">
         {filters.map((filter) => (
           <button
