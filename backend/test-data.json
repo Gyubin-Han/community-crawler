@@ -1,0 +1,67 @@
+[
+  {
+    "id": "test-dc-001",
+    "title": "디시인사이드 테스트 게시글 1",
+    "author": "테스트유저1",
+    "community": "dcinside",
+    "board": "프로그래밍 갤러리",
+    "content": "Spring Boot와 React로 커뮤니티 애그리게이터를 만들어봤습니다.",
+    "views": 1234,
+    "comments": 45,
+    "likes": 89,
+    "timestamp": "2025-11-19T10:30:00",
+    "url": "https://gall.dcinside.com/board/view/?id=programming&no=12345"
+  },
+  {
+    "id": "test-ruliweb-001",
+    "title": "루리웹 테스트 게시글 1",
+    "author": "루리웹유저",
+    "community": "ruliweb",
+    "board": "유머 게시판",
+    "content": "오늘 본 재미있는 밈을 공유합니다 ㅋㅋㅋ",
+    "views": 5678,
+    "comments": 123,
+    "likes": 234,
+    "timestamp": "2025-11-19T11:15:00",
+    "url": "https://bbs.ruliweb.com/community/board/300143/read/12345"
+  },
+  {
+    "id": "test-arca-001",
+    "title": "아카라이브 테스트 게시글 1",
+    "author": "익명123",
+    "community": "arcalive",
+    "board": "개발 채널",
+    "content": "TypeScript 타입 추론 꿀팁 공유합니다",
+    "views": 2345,
+    "comments": 67,
+    "likes": 145,
+    "timestamp": "2025-11-19T09:45:00",
+    "url": "https://arca.live/b/dev/12345"
+  },
+  {
+    "id": "test-dc-002",
+    "title": "디시인사이드 테스트 게시글 2",
+    "author": "갤러리안",
+    "community": "dcinside",
+    "board": "야구 갤러리",
+    "content": "오늘 경기 결과 정리합니다",
+    "views": 8901,
+    "comments": 234,
+    "likes": 456,
+    "timestamp": "2025-11-19T12:00:00",
+    "url": "https://gall.dcinside.com/board/view/?id=baseball&no=67890"
+  },
+  {
+    "id": "test-ruliweb-002",
+    "title": "루리웹 테스트 게시글 2",
+    "author": "게임덕후",
+    "community": "ruliweb",
+    "board": "게임 게시판",
+    "content": "신작 게임 리뷰입니다. 그래픽은 최고네요",
+    "views": 3456,
+    "comments": 89,
+    "likes": 178,
+    "timestamp": "2025-11-19T08:20:00",
+    "url": "https://bbs.ruliweb.com/community/board/300143/read/67890"
+  }
+]
