@@ -2,7 +2,7 @@ spring:
   application:
     name: community-aggregator
   datasource:
-    url: jdbc:mariadb://127.0.0.1:3306/community_aggregator?allowPublicKeyRetrieval=true&useSSL=false
+    url: jdbc:mariadb://127.0.0.1:3306/community_aggregator?allowPublicKeyRetrieval=true&useSSL=false&localSocket=false
     username: aggregator
     password: aggregator123
     driver-class-name: org.mariadb.jdbc.Driver
