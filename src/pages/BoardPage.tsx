@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import PostList from '../components/PostList';
 import crawledPosts from '../data/posts.json';
-import { Post } from '../types';
+import type { Post } from '../types';
 import { BOARD_CONFIGS } from '../config/boardConfig';
 
 const BoardPage: React.FC = () => {
