@@ -29,11 +29,8 @@ src/data/posts.json
 # Debug files
 crawler/debug-*.html
 
-# Maven
+# Maven build output
 backend/target/
-backend/.mvn/
-backend/mvnw
-backend/mvnw.cmd
 
 # Spring Boot
 backend/HELP.md
