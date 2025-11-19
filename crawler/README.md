@@ -63,12 +63,24 @@ npm run dev
 
 ## 출력
 
-크롤링 결과는 다음 경로에 저장됩니다:
-```
-../src/data/posts.json
-```
+크롤링한 데이터는 **Spring Boot API로 자동 전송**됩니다.
 
-프론트엔드에서 이 파일을 import하여 사용합니다.
+### API 전송 (기본 동작)
+- 크롤링한 게시글을 `http://localhost:8080/api/posts/batch`로 전송
+- API가 실패하면 자동으로 파일에 저장
+
+### 환경 변수
+
+```bash
+# API URL 설정 (기본값: http://localhost:8080/api)
+export API_URL=http://your-server:8080/api
+
+# API 전송 비활성화 (파일만 저장)
+export ENABLE_API=false
+
+# API 전송 + 파일 저장 (둘 다)
+export SAVE_TO_FILE=true
+```
 
 ## 설정
 
@@ -126,4 +138,4 @@ headless: true,  // 'new'로 변경하면 더 적은 메모리 사용
 - [ ] HTML 선택자 실제 페이지에 맞게 조정
 - [ ] 더 많은 게시판 추가
 - [ ] 에러 핸들링 강화
-- [ ] Spring 백엔드로 마이그레이션
+- [x] Spring 백엔드로 마이그레이션 ✅
