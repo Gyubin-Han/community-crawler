@@ -3,7 +3,9 @@ package com.community.aggregator.dto;
 import com.community.aggregator.entity.Post;
 import lombok.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Getter
 @Setter
@@ -41,6 +43,19 @@ public class PostDto {
     }
 
     public Post toEntity() {
+        // Parse ISO 8601 format with timezone (e.g., "2025-11-19T18:25:43.306Z")
+        LocalDateTime parsedTimestamp;
+        try {
+            // Try parsing as Instant (handles Z timezone)
+            parsedTimestamp = LocalDateTime.ofInstant(
+                Instant.parse(this.timestamp),
+                ZoneId.systemDefault()
+            );
+        } catch (Exception e) {
+            // Fallback to LocalDateTime.parse for formats without timezone
+            parsedTimestamp = LocalDateTime.parse(this.timestamp);
+        }
+
         return Post.builder()
                 .id(this.id)
                 .title(this.title)
@@ -51,7 +66,7 @@ public class PostDto {
                 .views(this.views)
                 .comments(this.comments)
                 .likes(this.likes)
-                .timestamp(LocalDateTime.parse(this.timestamp))
+                .timestamp(parsedTimestamp)
                 .url(this.url)
                 .build();
     }
