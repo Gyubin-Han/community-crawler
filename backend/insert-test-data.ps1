@@ -2,11 +2,12 @@
 
 Write-Host "Inserting test data to Spring Boot API..." -ForegroundColor Green
 
-$testData = Get-Content -Path "test-data.json" -Raw
+# Read JSON file with UTF-8 encoding (no BOM)
+$testData = Get-Content -Path "test-data.json" -Raw -Encoding UTF8
 $uri = "http://localhost:8080/api/posts/batch"
 
 try {
-    $response = Invoke-RestMethod -Uri $uri -Method Post -Body $testData -ContentType "application/json"
+    $response = Invoke-RestMethod -Uri $uri -Method Post -Body $testData -ContentType "application/json; charset=utf-8"
 
     Write-Host "`nSuccess! Inserted $($response.Count) posts" -ForegroundColor Green
     Write-Host "`nInserted posts:" -ForegroundColor Cyan
