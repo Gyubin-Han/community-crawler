@@ -99,6 +99,22 @@ public class PostController {
     }
 
     /**
+     * 게시글 본문만 업데이트
+     * PATCH /api/posts/{id}/content
+     */
+    @PatchMapping("/{id}/content")
+    public ResponseEntity<PostDto> updatePostContent(
+            @PathVariable String id,
+            @RequestBody String content
+    ) {
+        log.info("PATCH /api/posts/{}/content - {} chars", id, content.length());
+
+        return postService.updateContent(id, content)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
      * 게시글 삭제
      * DELETE /api/posts/{id}
      */

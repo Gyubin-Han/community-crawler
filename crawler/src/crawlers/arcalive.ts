@@ -8,6 +8,47 @@ import { CRAWLER_CONFIG } from '../config.js';
 export class ArcaliveCrawler extends BaseCrawler {
   protected communityName = 'Arcalive';
 
+  /**
+   * 게시글 상세 페이지에서 본문 크롤링
+   */
+  async crawlPostDetail(url: string): Promise<string> {
+    try {
+      const html = await PuppeteerFetcher.fetchHTML(url);
+      if (!html) return '';
+
+      const $ = cheerio.load(html);
+
+      // 아카라이브 본문 영역 선택자 (실제 HTML 구조에 맞게 조정 필요)
+      const contentSelectors = [
+        '.article-body',  // 아카라이브 일반 게시판
+        '.article-content',
+        '.fr-view',  // Froala 에디터
+        '.post-content',
+        'article .content'
+      ];
+
+      for (const selector of contentSelectors) {
+        const content = $(selector).first();
+        if (content.length > 0) {
+          // 이미지, 광고 등 불필요한 요소 제거
+          content.find('script, style, iframe, .ad, .advertisement').remove();
+
+          const text = this.cleanText(content.text());
+          if (text.length > 0) {
+            Logger.info(`Crawled content from ${url} - ${text.length} chars`);
+            return text;
+          }
+        }
+      }
+
+      Logger.warn(`No content found for ${url}`);
+      return '';
+    } catch (error) {
+      Logger.error(`Failed to crawl detail page: ${url}`, error);
+      return '';
+    }
+  }
+
   async crawlBoard(board: BoardConfig): Promise<Post[]> {
     const html = await PuppeteerFetcher.fetchHTML(board.url);
     if (!html) return [];

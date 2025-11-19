@@ -77,6 +77,35 @@ export async function sendPostsToAPI(posts: Post[]): Promise<boolean> {
 }
 
 /**
+ * 게시글 본문만 업데이트
+ */
+export async function updatePostContent(id: string, content: string): Promise<boolean> {
+  try {
+    await axios.patch(`${API_BASE_URL}/posts/${id}/content`, content, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+      },
+      timeout: 10000,
+    });
+
+    Logger.success(`Updated content for post: ${id}`);
+    return true;
+
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      Logger.error(`Failed to update post content: ${id}`, {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        message: error.message,
+      });
+    } else {
+      Logger.error(`Failed to update post content: ${id}`, error);
+    }
+    return false;
+  }
+}
+
+/**
  * API 헬스 체크
  */
 export async function healthCheck(): Promise<boolean> {

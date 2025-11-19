@@ -5,7 +5,8 @@ import { RuliwebCrawler } from './crawlers/ruliweb.js';
 import { ArcaliveCrawler } from './crawlers/arcalive.js';
 import { PuppeteerFetcher } from './utils/puppeteer-fetcher.js';
 import { Logger } from './utils/logger.js';
-import { sendPostsToAPI, healthCheck } from './utils/api-client.js';
+import { sendPostsToAPI, healthCheck, updatePostContent } from './utils/api-client.js';
+import { runWithConcurrency } from './utils/concurrency.js';
 import { RULIWEB_BOARDS, ARCALIVE_CHANNELS } from './config.js';
 import type { Post } from './types.js';
 
@@ -14,6 +15,8 @@ const __dirname = path.dirname(__filename);
 
 const OUTPUT_PATH = path.join(__dirname, '../../src/data/posts.json');
 const ENABLE_API = process.env.ENABLE_API !== 'false'; // 기본값: true
+const CRAWL_CONTENT = process.env.CRAWL_CONTENT !== 'false'; // 기본값: true
+const CONTENT_CONCURRENCY = parseInt(process.env.CONTENT_CONCURRENCY || '5', 10);
 
 async function test(): Promise<void> {
   Logger.info('========== Starting test crawl ==========');
@@ -58,10 +61,11 @@ async function test(): Promise<void> {
     });
   }
 
-  // API로 전송
+  // ========== 1단계: 메타데이터 전송 ==========
+  let apiSuccess = false;
   if (ENABLE_API && allPosts.length > 0) {
-    const success = await sendPostsToAPI(allPosts);
-    if (!success) {
+    apiSuccess = await sendPostsToAPI(allPosts);
+    if (!apiSuccess) {
       Logger.warn('Failed to send to API. Posts will be saved to file only.');
     }
   } else if (!ENABLE_API) {
@@ -77,10 +81,57 @@ async function test(): Promise<void> {
     Logger.error('Failed to save posts', error);
   }
 
+  // ========== 2단계: 본문 크롤링 ==========
+  if (ENABLE_API && apiSuccess && CRAWL_CONTENT && allPosts.length > 0) {
+    Logger.info('========== Starting content crawling ==========');
+    await crawlPostContents(allPosts, ruliwebCrawler, arcaliveCrawler);
+  }
+
   // 브라우저 종료
   await PuppeteerFetcher.closeBrowser();
 
   Logger.info('========== Test crawl completed ==========');
+}
+
+/**
+ * 게시글 본문 크롤링 및 업데이트
+ */
+async function crawlPostContents(
+  posts: Post[],
+  ruliwebCrawler: RuliwebCrawler,
+  arcaliveCrawler: ArcaliveCrawler
+): Promise<void> {
+  Logger.info(`Crawling content for ${posts.length} posts with concurrency limit: ${CONTENT_CONCURRENCY}`);
+
+  const tasks = posts.map((post) => async () => {
+    try {
+      let content = '';
+
+      // 커뮤니티별로 적절한 크롤러 선택
+      if (post.community === 'ruliweb') {
+        content = await ruliwebCrawler.crawlPostDetail(post.url);
+      } else if (post.community === 'arcalive') {
+        content = await arcaliveCrawler.crawlPostDetail(post.url);
+      }
+
+      // 본문이 있으면 업데이트
+      if (content && content.length > 0) {
+        await updatePostContent(post.id, content);
+      } else {
+        Logger.warn(`No content found for post: ${post.id}`);
+      }
+
+      // 서버 부하 방지를 위한 짧은 딜레이
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    } catch (error) {
+      Logger.error(`Failed to crawl content for post: ${post.id}`, error);
+    }
+  });
+
+  // 동시성 제한을 두고 실행
+  await runWithConcurrency(tasks, CONTENT_CONCURRENCY);
+
+  Logger.info('Content crawling completed');
 }
 
 test().catch((error) => {

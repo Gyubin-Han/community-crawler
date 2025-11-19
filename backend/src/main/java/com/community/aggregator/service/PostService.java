@@ -97,6 +97,20 @@ public class PostService {
     }
 
     /**
+     * 게시글 본문만 업데이트
+     */
+    @Transactional
+    public Optional<PostDto> updateContent(String id, String content) {
+        return postRepository.findById(id)
+                .map(post -> {
+                    post.setContent(content);
+                    Post updatedPost = postRepository.save(post);
+                    log.info("Post content updated: {}", id);
+                    return PostDto.fromEntity(updatedPost);
+                });
+    }
+
+    /**
      * 게시글 삭제
      */
     @Transactional
