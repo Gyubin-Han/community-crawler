@@ -81,7 +81,7 @@ export async function sendPostsToAPI(posts: Post[]): Promise<boolean> {
  */
 export async function healthCheck(): Promise<boolean> {
   try {
-    const response = await axios.get(`${API_BASE_URL}/posts/health`, {
+    const response = await axios.get(`${API_BASE_URL}/health`, {
       timeout: 5000,
     });
 

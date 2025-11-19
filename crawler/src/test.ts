@@ -5,6 +5,7 @@ import { RuliwebCrawler } from './crawlers/ruliweb.js';
 import { ArcaliveCrawler } from './crawlers/arcalive.js';
 import { PuppeteerFetcher } from './utils/puppeteer-fetcher.js';
 import { Logger } from './utils/logger.js';
+import { sendPostsToAPI, healthCheck } from './utils/api-client.js';
 import { RULIWEB_BOARDS, ARCALIVE_CHANNELS } from './config.js';
 import type { Post } from './types.js';
 
@@ -12,9 +13,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const OUTPUT_PATH = path.join(__dirname, '../../src/data/posts.json');
+const ENABLE_API = process.env.ENABLE_API !== 'false'; // 기본값: true
 
 async function test(): Promise<void> {
   Logger.info('========== Starting test crawl ==========');
+
+  // API 헬스 체크
+  if (ENABLE_API) {
+    const apiHealthy = await healthCheck();
+    if (!apiHealthy) {
+      Logger.warn('API is not healthy. Posts will be saved to file only.');
+    }
+  }
 
   const allPosts: Post[] = [];
 
@@ -46,6 +56,16 @@ async function test(): Promise<void> {
       console.log(`Views: ${post.views}, Comments: ${post.comments}, Likes: ${post.likes}`);
       console.log(`URL: ${post.url}`);
     });
+  }
+
+  // API로 전송
+  if (ENABLE_API && allPosts.length > 0) {
+    const success = await sendPostsToAPI(allPosts);
+    if (!success) {
+      Logger.warn('Failed to send to API. Posts will be saved to file only.');
+    }
+  } else if (!ENABLE_API) {
+    Logger.info('API sending is disabled');
   }
 
   // 결과 저장
