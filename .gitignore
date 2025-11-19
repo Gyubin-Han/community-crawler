@@ -38,5 +38,8 @@ backend/*.iml
 backend/.gradle/
 backend/build/
 
-# Application properties (if contains sensitive data)
-# backend/src/main/resources/application-local.yml
+# Application properties (contains sensitive data)
+backend/src/main/resources/application.properties
+backend/src/main/resources/application-*.properties
+*.env
+.env*
