@@ -3,7 +3,7 @@ spring.application.name=community-aggregator
 
 # DataSource Configuration
 # Use environment variables or replace with your actual values
-spring.datasource.url=jdbc:mysql://[::1]:3306/community_aggregator
+spring.datasource.url=jdbc:mysql://[::1]:3306/community_aggregator?characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci
 spring.datasource.username=your_username
 spring.datasource.password=your_password
 spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
@@ -18,6 +18,7 @@ spring.jpa.open-in-view=false
 # SQL Script Initialization
 spring.sql.init.mode=always
 spring.jpa.defer-datasource-initialization=true
+spring.sql.init.encoding=UTF-8
 
 # Server Configuration
 server.port=8080
