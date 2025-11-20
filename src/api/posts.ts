@@ -16,6 +16,16 @@ export interface PostDto {
   url: string;
 }
 
+export interface BoardDto {
+  id: number;
+  community: string;
+  name: string;
+  url: string;
+  enabled: boolean;
+  displayOrder: number;
+  description?: string;
+}
+
 /**
  * 모든 게시글 조회
  */
@@ -99,6 +109,25 @@ export async function healthCheck(): Promise<boolean> {
     return response.ok;
   } catch {
     return false;
+  }
+}
+
+/**
+ * 활성화된 게시판 목록 조회
+ */
+export async function fetchEnabledBoards(): Promise<BoardDto[]> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/boards?enabled=true`);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch boards: ${response.status}`);
+    }
+
+    const data: BoardDto[] = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch boards:', error);
+    return [];
   }
 }
 

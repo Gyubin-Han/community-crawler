@@ -18,6 +18,16 @@ export interface PostDto {
   url: string;
 }
 
+export interface BoardDto {
+  id: number;
+  community: string;
+  name: string;
+  url: string;
+  enabled: boolean;
+  displayOrder: number;
+  description?: string;
+}
+
 /**
  * Post를 DTO로 변환
  */
@@ -132,5 +142,29 @@ export async function healthCheck(): Promise<boolean> {
   } catch (error) {
     Logger.error('API health check failed', error);
     return false;
+  }
+}
+
+/**
+ * 활성화된 게시판 목록 가져오기
+ */
+export async function fetchEnabledBoards(community?: string): Promise<BoardDto[]> {
+  try {
+    const params: any = { enabled: true };
+    if (community) {
+      params.community = community;
+    }
+
+    const response = await axios.get(`${API_BASE_URL}/boards`, {
+      params,
+      timeout: 5000,
+    });
+
+    Logger.success(`Fetched ${response.data.length} boards from API`);
+    return response.data;
+
+  } catch (error) {
+    Logger.error('Failed to fetch boards from API', error);
+    return [];
   }
 }

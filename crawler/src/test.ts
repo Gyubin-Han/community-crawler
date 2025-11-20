@@ -5,10 +5,10 @@ import { RuliwebCrawler } from './crawlers/ruliweb.js';
 import { ArcaliveCrawler } from './crawlers/arcalive.js';
 import { PuppeteerFetcher } from './utils/puppeteer-fetcher.js';
 import { Logger } from './utils/logger.js';
-import { sendPostsToAPI, healthCheck, updatePostContent } from './utils/api-client.js';
+import { sendPostsToAPI, healthCheck, updatePostContent, fetchEnabledBoards, type BoardDto } from './utils/api-client.js';
 import { runWithConcurrency } from './utils/concurrency.js';
 import { RULIWEB_BOARDS, ARCALIVE_CHANNELS } from './config.js';
-import type { Post } from './types.js';
+import type { Post, BoardConfig } from './types.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,6 +17,7 @@ const OUTPUT_PATH = path.join(__dirname, '../../src/data/posts.json');
 const ENABLE_API = process.env.ENABLE_API !== 'false'; // 기본값: true
 const CRAWL_CONTENT = process.env.CRAWL_CONTENT !== 'false'; // 기본값: true
 const CONTENT_CONCURRENCY = parseInt(process.env.CONTENT_CONCURRENCY || '5', 10);
+const USE_DB_BOARDS = process.env.USE_DB_BOARDS !== 'false'; // 기본값: true
 
 async function test(): Promise<void> {
   Logger.info('========== Starting test crawl ==========');
@@ -31,17 +32,42 @@ async function test(): Promise<void> {
 
   const allPosts: Post[] = [];
 
+  // 게시판 목록 가져오기 (DB 또는 하드코딩)
+  let ruliwebBoards: BoardConfig[] = RULIWEB_BOARDS;
+  let arcaliveBoards: BoardConfig[] = ARCALIVE_CHANNELS;
+
+  if (USE_DB_BOARDS && ENABLE_API) {
+    Logger.info('Fetching board list from database...');
+    const boards = await fetchEnabledBoards();
+
+    if (boards.length > 0) {
+      ruliwebBoards = boards
+        .filter(b => b.community === 'ruliweb')
+        .map(b => ({ name: b.name, url: b.url }));
+
+      arcaliveBoards = boards
+        .filter(b => b.community === 'arcalive')
+        .map(b => ({ name: b.name, url: b.url }));
+
+      Logger.success(`Loaded ${ruliwebBoards.length} Ruliweb boards, ${arcaliveBoards.length} Arcalive boards from DB`);
+    } else {
+      Logger.warn('No boards found in DB. Using hardcoded board list.');
+    }
+  } else {
+    Logger.info('Using hardcoded board list from config.ts');
+  }
+
   // 루리웹 테스트
   Logger.info('Testing Ruliweb crawler...');
   const ruliwebCrawler = new RuliwebCrawler();
-  const ruliwebPosts = await ruliwebCrawler.crawlAll(RULIWEB_BOARDS);
+  const ruliwebPosts = await ruliwebCrawler.crawlAll(ruliwebBoards);
   allPosts.push(...ruliwebPosts);
   Logger.info(`Ruliweb: ${ruliwebPosts.length} posts`);
 
   // 아카라이브 테스트
   Logger.info('Testing Arcalive crawler...');
   const arcaliveCrawler = new ArcaliveCrawler();
-  const arcalivePosts = await arcaliveCrawler.crawlAll(ARCALIVE_CHANNELS);
+  const arcalivePosts = await arcaliveCrawler.crawlAll(arcaliveBoards);
   allPosts.push(...arcalivePosts);
   Logger.info(`Arcalive: ${arcalivePosts.length} posts`);
 
