@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import PostList from '../components/PostList';
 import type { Post } from '../types';
-import { BOARD_CONFIGS } from '../config/boardConfig';
 import { fetchAllPosts } from '../api/posts';
 
 const BoardPage: React.FC = () => {
@@ -14,10 +13,8 @@ const BoardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 현재 게시판 설정 찾기
-  const currentBoard = BOARD_CONFIGS.find(
-    (b) => b.id === (boardId || 'all')
-  ) || BOARD_CONFIGS[0];
+  // 현재 선택된 게시판 이름 (URL에서 디코딩)
+  const currentBoardName = boardId ? decodeURIComponent(boardId) : 'all';
 
   // API에서 게시글 가져오기
   useEffect(() => {
@@ -40,16 +37,14 @@ const BoardPage: React.FC = () => {
 
   // 게시판별로 필터링된 게시글
   const filteredPosts = useMemo(() => {
-    // '전체' 게시판이거나 boards가 비어있으면 모든 게시글
-    if (currentBoard.id === 'all' || currentBoard.boards.length === 0) {
+    // '전체' 게시판이면 모든 게시글
+    if (currentBoardName === 'all') {
       return posts;
     }
 
-    // 해당 게시판에 포함된 board 이름으로 필터링
-    return posts.filter((post) =>
-      currentBoard.boards.includes(post.board)
-    );
-  }, [currentBoard, posts]);
+    // 선택된 게시판 이름으로 필터링
+    return posts.filter((post) => post.board === currentBoardName);
+  }, [currentBoardName, posts]);
 
   if (loading) {
     return (
@@ -83,7 +78,7 @@ const BoardPage: React.FC = () => {
       <PostList
         posts={filteredPosts}
         searchQuery={searchQuery}
-        boardName={currentBoard.name}
+        boardName={currentBoardName === 'all' ? '전체' : currentBoardName}
       />
     </div>
   );
