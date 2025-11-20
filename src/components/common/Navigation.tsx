@@ -13,17 +13,7 @@ const Navigation: React.FC = () => {
       const boards = await fetchEnabledBoards();
 
       if (boards.length > 0) {
-        // 커뮤니티별로 게시판 그룹화
-        const communityMap: Record<string, string[]> = {};
-
-        boards.forEach((board) => {
-          if (!communityMap[board.community]) {
-            communityMap[board.community] = [];
-          }
-          communityMap[board.community].push(board.name);
-        });
-
-        // BoardConfig 생성
+        // BoardConfig 생성 - 전체 탭
         const dynamicConfigs: BoardConfig[] = [
           {
             id: 'all',
@@ -33,25 +23,20 @@ const Navigation: React.FC = () => {
           },
         ];
 
-        // 커뮤니티별 탭 추가
+        // 커뮤니티별 색상
         const communityColors: Record<string, string> = {
           ruliweb: 'blue',
           arcalive: 'green',
           dcinside: 'purple',
         };
 
-        const communityNames: Record<string, string> = {
-          ruliweb: '루리웹',
-          arcalive: '아카라이브',
-          dcinside: '디시인사이드',
-        };
-
-        Object.entries(communityMap).forEach(([community, boardNames]) => {
+        // 각 게시판을 개별 탭으로 추가
+        boards.forEach((board) => {
           dynamicConfigs.push({
-            id: community,
-            name: communityNames[community] || community,
-            boards: boardNames,
-            color: communityColors[community] || 'gray',
+            id: board.name,  // 게시판 이름을 ID로 사용
+            name: board.name,  // 게시판 이름을 표시
+            boards: [board.name],  // 해당 게시판만 포함
+            color: communityColors[board.community] || 'gray',
           });
         });
 
