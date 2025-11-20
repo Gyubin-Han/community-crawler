@@ -9,16 +9,16 @@ export class ArcaliveCrawler extends BaseCrawler {
   protected communityName = 'Arcalive';
 
   /**
-   * 게시글 상세 페이지에서 본문 크롤링
+   * 게시글 상세 페이지에서 본문 및 정확한 작성일시 크롤링
    */
-  async crawlPostDetail(url: string): Promise<string> {
+  async crawlPostDetail(url: string): Promise<{ content: string; timestamp?: string }> {
     try {
       const html = await PuppeteerFetcher.fetchHTML(url);
-      if (!html) return '';
+      if (!html) return { content: '' };
 
       const $ = cheerio.load(html);
 
-      // 아카라이브 본문 영역 선택자 (실제 HTML 구조에 맞게 조정 필요)
+      // 본문 크롤링
       const contentSelectors = [
         '.article-body',  // 아카라이브 일반 게시판
         '.article-content',
@@ -27,25 +27,60 @@ export class ArcaliveCrawler extends BaseCrawler {
         'article .content'
       ];
 
+      let content = '';
       for (const selector of contentSelectors) {
-        const content = $(selector).first();
-        if (content.length > 0) {
+        const contentEl = $(selector).first();
+        if (contentEl.length > 0) {
           // 이미지, 광고 등 불필요한 요소 제거
-          content.find('script, style, iframe, .ad, .advertisement').remove();
+          contentEl.find('script, style, iframe, .ad, .advertisement').remove();
 
-          const text = this.cleanText(content.text());
+          const text = this.cleanText(contentEl.text());
           if (text.length > 0) {
-            Logger.info(`Crawled content from ${url} - ${text.length} chars`);
-            return text;
+            content = text;
+            break;
           }
         }
       }
 
-      Logger.warn(`No content found for ${url}`);
-      return '';
+      // 정확한 작성일시 크롤링
+      let timestamp: string | undefined;
+      const timeSelectors = [
+        '.article-head time',
+        '.article-info time',
+        'time[datetime]',
+        '.post-time',
+        '.date'
+      ];
+
+      for (const selector of timeSelectors) {
+        const timeEl = $(selector).first();
+        if (timeEl.length > 0) {
+          // datetime 속성이 있으면 우선 사용
+          const datetime = timeEl.attr('datetime');
+          if (datetime) {
+            timestamp = datetime;
+            break;
+          }
+
+          // 없으면 텍스트에서 추출
+          const timeText = this.cleanText(timeEl.text());
+          if (timeText) {
+            timestamp = this.parseRelativeTime(timeText);
+            break;
+          }
+        }
+      }
+
+      if (content.length > 0) {
+        Logger.info(`Crawled from ${url} - ${content.length} chars, timestamp: ${timestamp || 'none'}`);
+      } else {
+        Logger.warn(`No content found for ${url}`);
+      }
+
+      return { content, timestamp };
     } catch (error) {
       Logger.error(`Failed to crawl detail page: ${url}`, error);
-      return '';
+      return { content: '' };
     }
   }
 
@@ -93,7 +128,7 @@ export class ArcaliveCrawler extends BaseCrawler {
           author: author || '익명',
           community: 'arcalive',
           board: board.name,
-          content: title, // 상세 내용은 가져오지 않음
+          content: '', // 본문은 2단계에서 크롤링
           views,
           comments,
           likes,

@@ -77,18 +77,23 @@ export async function sendPostsToAPI(posts: Post[]): Promise<boolean> {
 }
 
 /**
- * 게시글 본문만 업데이트
+ * 게시글 본문 및 작성일시 업데이트
  */
-export async function updatePostContent(id: string, content: string): Promise<boolean> {
+export async function updatePostContent(id: string, content: string, timestamp?: string): Promise<boolean> {
   try {
-    await axios.patch(`${API_BASE_URL}/posts/${id}/content`, content, {
+    const payload: { content: string; timestamp?: string } = { content };
+    if (timestamp) {
+      payload.timestamp = timestamp;
+    }
+
+    await axios.patch(`${API_BASE_URL}/posts/${id}/content`, payload, {
       headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
+        'Content-Type': 'application/json; charset=utf-8',
       },
       timeout: 10000,
     });
 
-    Logger.success(`Updated content for post: ${id}`);
+    Logger.success(`Updated post: ${id} (content: ${content.length} chars, timestamp: ${timestamp || 'none'})`);
     return true;
 
   } catch (error) {

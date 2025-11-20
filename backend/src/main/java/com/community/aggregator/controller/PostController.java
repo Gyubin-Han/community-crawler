@@ -1,6 +1,7 @@
 package com.community.aggregator.controller;
 
 import com.community.aggregator.dto.PostDto;
+import com.community.aggregator.dto.UpdateContentRequest;
 import com.community.aggregator.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -99,17 +100,20 @@ public class PostController {
     }
 
     /**
-     * 게시글 본문만 업데이트
+     * 게시글 본문 및 작성일시 업데이트
      * PATCH /api/posts/{id}/content
      */
     @PatchMapping("/{id}/content")
     public ResponseEntity<PostDto> updatePostContent(
             @PathVariable String id,
-            @RequestBody String content
+            @RequestBody UpdateContentRequest request
     ) {
-        log.info("PATCH /api/posts/{}/content - {} chars", id, content.length());
+        log.info("PATCH /api/posts/{}/content - content: {} chars, timestamp: {}",
+            id,
+            request.getContent() != null ? request.getContent().length() : 0,
+            request.getTimestamp());
 
-        return postService.updateContent(id, content)
+        return postService.updateContent(id, request)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

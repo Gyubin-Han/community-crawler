@@ -61,7 +61,11 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose }) => {
           </div>
 
           <div className="prose max-w-none mb-6">
-            <p className="text-gray-700 whitespace-pre-wrap">{post.content}</p>
+            {post.content ? (
+              <p className="text-gray-700 whitespace-pre-wrap">{post.content}</p>
+            ) : (
+              <p className="text-gray-400 italic">본문 내용을 불러오는 중입니다...</p>
+            )}
           </div>
 
           <div className="flex items-center gap-6 py-4 border-t border-gray-200">

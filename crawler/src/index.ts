@@ -97,18 +97,18 @@ async function crawlPostContents(
 
   const tasks = posts.map((post) => async () => {
     try {
-      let content = '';
+      let result: { content: string; timestamp?: string } = { content: '' };
 
       // 커뮤니티별로 적절한 크롤러 선택
       if (post.community === 'ruliweb') {
-        content = await ruliwebCrawler.crawlPostDetail(post.url);
+        result = await ruliwebCrawler.crawlPostDetail(post.url);
       } else if (post.community === 'arcalive') {
-        content = await arcaliveCrawler.crawlPostDetail(post.url);
+        result = await arcaliveCrawler.crawlPostDetail(post.url);
       }
 
-      // 본문이 있으면 업데이트
-      if (content && content.length > 0) {
-        await updatePostContent(post.id, content);
+      // 본문이 있으면 업데이트 (정확한 작성일시 포함)
+      if (result.content && result.content.length > 0) {
+        await updatePostContent(post.id, result.content, result.timestamp);
       } else {
         Logger.warn(`No content found for post: ${post.id}`);
       }

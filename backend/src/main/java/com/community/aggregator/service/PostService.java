@@ -1,6 +1,7 @@
 package com.community.aggregator.service;
 
 import com.community.aggregator.dto.PostDto;
+import com.community.aggregator.dto.UpdateContentRequest;
 import com.community.aggregator.entity.Post;
 import com.community.aggregator.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -97,15 +101,35 @@ public class PostService {
     }
 
     /**
-     * 게시글 본문만 업데이트
+     * 게시글 본문 및 작성일시 업데이트
      */
     @Transactional
-    public Optional<PostDto> updateContent(String id, String content) {
+    public Optional<PostDto> updateContent(String id, UpdateContentRequest request) {
         return postRepository.findById(id)
                 .map(post -> {
-                    post.setContent(content);
+                    // 본문 업데이트
+                    if (request.getContent() != null) {
+                        post.setContent(request.getContent());
+                    }
+
+                    // 작성일시 업데이트 (정확한 시간으로)
+                    if (request.getTimestamp() != null && !request.getTimestamp().isEmpty()) {
+                        try {
+                            LocalDateTime accurateTimestamp = LocalDateTime.ofInstant(
+                                Instant.parse(request.getTimestamp()),
+                                ZoneId.systemDefault()
+                            );
+                            post.setTimestamp(accurateTimestamp);
+                        } catch (Exception e) {
+                            log.warn("Failed to parse timestamp for post {}: {}", id, request.getTimestamp());
+                        }
+                    }
+
                     Post updatedPost = postRepository.save(post);
-                    log.info("Post content updated: {}", id);
+                    log.info("Post updated: {} (content: {} chars, timestamp: {})",
+                        id,
+                        request.getContent() != null ? request.getContent().length() : 0,
+                        request.getTimestamp() != null);
                     return PostDto.fromEntity(updatedPost);
                 });
     }
