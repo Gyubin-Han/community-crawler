@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import type { Post, CommunityFilter } from '../types';
 import PostCard from './common/PostCard';
-import PostModal from './common/PostModal';
 
 interface PostListProps {
   posts: Post[];
@@ -10,7 +9,6 @@ interface PostListProps {
 }
 
 const PostList: React.FC<PostListProps> = ({ posts, searchQuery, boardName }) => {
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>('all');
 
   const filters: CommunityFilter[] = [
@@ -61,16 +59,10 @@ const PostList: React.FC<PostListProps> = ({ posts, searchQuery, boardName }) =>
             <PostCard
               key={post.id}
               post={post}
-              onClick={() => setSelectedPost(post)}
             />
           ))}
         </div>
       )}
-
-      <PostModal
-        post={selectedPost}
-        onClose={() => setSelectedPost(null)}
-      />
     </div>
   );
 };

@@ -1,12 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Post } from '../../types';
 
 interface PostCardProps {
   post: Post;
-  onClick: () => void;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post, onClick }) => {
+const PostCard: React.FC<PostCardProps> = ({ post }) => {
+  const [isRead, setIsRead] = useState(false);
+
+  // 읽은 글인지 확인
+  useEffect(() => {
+    const readPosts = JSON.parse(localStorage.getItem('readPosts') || '[]');
+    setIsRead(readPosts.includes(post.id));
+  }, [post.id]);
+
+  // 클릭 시 읽은 글로 표시
+  const handleClick = () => {
+    const readPosts = JSON.parse(localStorage.getItem('readPosts') || '[]');
+    if (!readPosts.includes(post.id)) {
+      readPosts.push(post.id);
+      localStorage.setItem('readPosts', JSON.stringify(readPosts));
+      setIsRead(true);
+    }
+  };
+
   const getCommunityColor = (community: string) => {
     switch (community) {
       case 'dcinside':
@@ -34,9 +51,14 @@ const PostCard: React.FC<PostCardProps> = ({ post, onClick }) => {
   };
 
   return (
-    <div
-      onClick={onClick}
-      className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow cursor-pointer border border-gray-200"
+    <a
+      href={post.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={handleClick}
+      className={`block rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow border border-gray-200 no-underline ${
+        isRead ? 'bg-gray-50 opacity-70' : 'bg-white'
+      }`}
     >
       <div className="flex items-start justify-between mb-2">
         <span
@@ -51,7 +73,9 @@ const PostCard: React.FC<PostCardProps> = ({ post, onClick }) => {
         </span>
       </div>
 
-      <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">
+      <h3 className={`text-lg font-semibold mb-2 line-clamp-2 ${
+        isRead ? 'text-gray-500' : 'text-gray-800'
+      }`}>
         {post.title}
       </h3>
 
@@ -72,7 +96,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onClick }) => {
           <span>추천 {post.likes}</span>
         </div>
       </div>
-    </div>
+    </a>
   );
 };
 
