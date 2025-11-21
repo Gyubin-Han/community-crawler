@@ -17,6 +17,7 @@ public class BoardDto {
     private Boolean enabled;
     private Integer displayOrder;
     private String description;
+    private String groupName; // 그룹 이름 (여러 커뮤니티의 동일 주제 게시판을 묶음)
 
     public static BoardDto fromEntity(Board board) {
         return BoardDto.builder()
@@ -27,6 +28,7 @@ public class BoardDto {
                 .enabled(board.getEnabled())
                 .displayOrder(board.getDisplayOrder())
                 .description(board.getDescription())
+                .groupName(board.getGroupName())
                 .build();
     }
 
@@ -39,6 +41,7 @@ public class BoardDto {
                 .enabled(this.enabled != null ? this.enabled : true)
                 .displayOrder(this.displayOrder != null ? this.displayOrder : 0)
                 .description(this.description)
+                .groupName(this.groupName)
                 .build();
     }
 }

@@ -24,6 +24,7 @@ export interface BoardDto {
   enabled: boolean;
   displayOrder: number;
   description?: string;
+  groupName?: string; // 그룹 이름 (여러 커뮤니티의 동일 주제 게시판을 묶음)
 }
 
 /**

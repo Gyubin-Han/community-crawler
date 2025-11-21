@@ -30,12 +30,50 @@ const Navigation: React.FC = () => {
           dcinside: 'purple',
         };
 
-        // 각 게시판을 개별 탭으로 추가
+        // 그룹별로 게시판 묶기
+        const groupMap: Record<string, { boards: BoardDto[], color: string }> = {};
+        const ungroupedBoards: BoardDto[] = [];
+
         boards.forEach((board) => {
+          if (board.groupName) {
+            if (!groupMap[board.groupName]) {
+              groupMap[board.groupName] = { boards: [], color: 'gray' };
+            }
+            groupMap[board.groupName].boards.push(board);
+            // 첫 번째 게시판의 커뮤니티 색상 사용 (또는 혼합 색상)
+            if (groupMap[board.groupName].boards.length === 1) {
+              groupMap[board.groupName].color = communityColors[board.community] || 'gray';
+            } else {
+              // 여러 커뮤니티가 섞이면 indigo 색상 사용
+              groupMap[board.groupName].color = 'indigo';
+            }
+          } else {
+            ungroupedBoards.push(board);
+          }
+        });
+
+        // 그룹 탭 추가 (여러 게시판이 묶인 경우만)
+        Object.entries(groupMap).forEach(([groupName, group]) => {
+          if (group.boards.length > 1) {
+            // 여러 게시판이 있는 그룹 -> 그룹 탭으로 생성
+            dynamicConfigs.push({
+              id: `group:${groupName}`,
+              name: groupName,
+              boards: group.boards.map(b => b.name),
+              color: group.color,
+            });
+          } else {
+            // 단일 게시판 그룹 -> 개별 탭으로 추가
+            ungroupedBoards.push(...group.boards);
+          }
+        });
+
+        // 그룹에 속하지 않은 개별 게시판 탭 추가
+        ungroupedBoards.forEach((board) => {
           dynamicConfigs.push({
-            id: board.name,  // 게시판 이름을 ID로 사용
-            name: board.name,  // 게시판 이름을 표시
-            boards: [board.name],  // 해당 게시판만 포함
+            id: board.name,
+            name: board.name,
+            boards: [board.name],
             color: communityColors[board.community] || 'gray',
           });
         });

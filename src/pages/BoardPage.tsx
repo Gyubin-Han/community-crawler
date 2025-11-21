@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import PostList from '../components/PostList';
 import type { Post } from '../types';
-import { fetchAllPosts } from '../api/posts';
+import { fetchAllPosts, fetchEnabledBoards, type BoardDto } from '../api/posts';
 
 const BoardPage: React.FC = () => {
   const { boardId } = useParams<{ boardId?: string }>();
@@ -10,41 +10,61 @@ const BoardPage: React.FC = () => {
   const searchQuery = searchParams.get('q') || '';
 
   const [posts, setPosts] = useState<Post[]>([]);
+  const [boards, setBoards] = useState<BoardDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 현재 선택된 게시판 이름 (URL에서 디코딩)
-  const currentBoardName = boardId ? decodeURIComponent(boardId) : 'all';
+  // 현재 선택된 게시판/그룹 ID (URL에서 디코딩)
+  const currentId = boardId ? decodeURIComponent(boardId) : 'all';
 
-  // API에서 게시글 가져오기
+  // 그룹인지 확인 (group:유머 형식)
+  const isGroup = currentId.startsWith('group:');
+  const groupName = isGroup ? currentId.replace('group:', '') : null;
+
+  // API에서 게시글과 게시판 목록 가져오기
   useEffect(() => {
-    const loadPosts = async () => {
+    const loadData = async () => {
       try {
         setLoading(true);
         setError(null);
-        const data = await fetchAllPosts();
-        setPosts(data);
+        const [postsData, boardsData] = await Promise.all([
+          fetchAllPosts(),
+          fetchEnabledBoards()
+        ]);
+        setPosts(postsData);
+        setBoards(boardsData);
       } catch (err) {
-        console.error('Failed to load posts:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load posts');
+        console.error('Failed to load data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load data');
       } finally {
         setLoading(false);
       }
     };
 
-    loadPosts();
+    loadData();
   }, []);
 
   // 게시판별로 필터링된 게시글
   const filteredPosts = useMemo(() => {
     // '전체' 게시판이면 모든 게시글
-    if (currentBoardName === 'all') {
+    if (currentId === 'all') {
       return posts;
     }
 
-    // 선택된 게시판 이름으로 필터링
-    return posts.filter((post) => post.board === currentBoardName);
-  }, [currentBoardName, posts]);
+    // 그룹인 경우: 해당 그룹에 속한 모든 게시판의 게시글
+    if (isGroup && groupName) {
+      const groupBoardNames = boards
+        .filter(b => b.groupName === groupName)
+        .map(b => b.name);
+      return posts.filter((post) => groupBoardNames.includes(post.board));
+    }
+
+    // 개별 게시판인 경우: 해당 게시판 이름으로 필터링
+    return posts.filter((post) => post.board === currentId);
+  }, [currentId, isGroup, groupName, posts, boards]);
+
+  // 표시할 이름
+  const displayName = isGroup && groupName ? groupName : (currentId === 'all' ? '전체' : currentId);
 
   if (loading) {
     return (
@@ -78,7 +98,7 @@ const BoardPage: React.FC = () => {
       <PostList
         posts={filteredPosts}
         searchQuery={searchQuery}
-        boardName={currentBoardName === 'all' ? '전체' : currentBoardName}
+        boardName={displayName}
       />
     </div>
   );

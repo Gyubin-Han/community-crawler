@@ -42,6 +42,9 @@ public class Board {
     @Column(length = 200)
     private String description; // 게시판 설명 (선택)
 
+    @Column(length = 50)
+    private String groupName; // 그룹 이름 (예: '유머' - 여러 커뮤니티의 유머 게시판을 묶음)
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
